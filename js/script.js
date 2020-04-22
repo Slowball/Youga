@@ -99,91 +99,143 @@ window.addEventListener('DOMContentLoaded', function () {
 
     //form
 
-    let mesage = {
+    let message = {
         loading: 'Загрузка...',
-        success: 'Спасибо, скоро свяжемся',
-        failure: "Error"
+        success: 'Спасибо! Скоро мы с вами свяжемся!',
+        failure: 'Что-то пошло не так...'
     };
 
     let form = document.querySelector('.main-form'),
         input = form.getElementsByTagName('input'),
         statusMessage = document.createElement('div');
 
-    statusMessage.classList.add('status');
-    form.addEventListener('submit', function (event) {
+        statusMessage.classList.add('status');
+
+    form.addEventListener('submit', function(event) {
         event.preventDefault();
         form.appendChild(statusMessage);
 
         let request = new XMLHttpRequest();
         request.open('POST', 'server.php');
-        request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
         let formData = new FormData(form);
 
         let obj = {};
-        formData.forEach(function (value, key) {
+        formData.forEach(function(value, key) {
             obj[key] = value;
         });
         let json = JSON.stringify(obj);
 
         request.send(json);
 
-        request.addEventListener('readystatechange', function () {
+        request.addEventListener('readystatechange', function() {
             if (request.readyState < 4) {
-                statusMessage.innerHTML = mesage.loading;
-            } else if (request.readyState === 4 && request.status == 200) {
-                statusMessage.innerHTML = mesage.success;
+                statusMessage.innerHTML = message.loading;
+            } else if(request.readyState === 4 && request.status == 200) {
+                statusMessage.innerHTML = message.success;
             } else {
-                statusMessage.innerHTML = mesage.failure;
+                statusMessage.innerHTML = message.failure;
             }
         });
+
         for (let i = 0; i < input.length; i++) {
             input[i].value = '';
         }
     });
 
-    //form 2
+    // slider
 
-    let messages = {
-        loading: 'Загрузка...',
-        success: 'Спасибо, скоро свяжемся',
-        failure: "Error"
-    };
+    let slideIndex = 1,
+        slides = document.querySelectorAll('.slider-item'),
+        prev = document.querySelector('.prev'),
+        next = document.querySelector('.next'),
+        dotsWrap = document.querySelector('.slider-dots'),
+        dots = document.querySelectorAll('.dot');
 
-    let forma = document.querySelector('.contact-form'),
-        inputs = forma.getElementsByTagName('input'),
-        statusMess = document.createElement('div');
+        showSlides(slideIndex);
+    function showSlides(n) {
 
-    statusMess.classList.add('status');
-    forma.addEventListener('submit', function (event) {
-        event.preventDefault();
-        forma.appendChild(statusMess);
+        if (n > slides.length) {
+            slideIndex = 1;
+        };
+        if (n < 1) {
+            slideIndex = slides.length;
+        }
+        slides.forEach((item) => item.style.display = 'none');
+        dots.forEach((item) => item.classList.remove('dot-active'));
+        slides[slideIndex - 1].style.display = 'block';
+        dots[slideIndex - 1].classList.add('dot-active');
 
-        let request = new XMLHttpRequest();
-        request.open('POST', 'server.php');
-        request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-        let formData = new FormData(forma);
+    }
 
-        let obj = {};
-        formData.forEach((value, key) => {
-            obj[key] = value;
-        });
+    function plusSlides(n) {
+        showSlides(slideIndex += n);
+    }
+   
+    function minusSlides(n) {
+        showSlides(slideIndex = n);
+    }
 
-        let json = JSON.stringify(obj);
+    prev.addEventListener('clock', function () {
+        plusSlides(-1);
+    });
 
-        request.send(json);
+    next.addEventListener('click', function () {
+        plusSlides(1);
+    });
 
-        request.addEventListener('readystatechange', function () {
-            if (request.readyState < 4) {
-                statusMessage.innerHTML = mesage.loading;
-            } else if (request.readyState === 4 && request.status == 200) {
-                statusMessage.innerHTML = mesage.success;
+    dotsWrap.addEventListener('click', function (event) {
+        for (let i = 0; i < dots.length+1; i++) {
+            if (event.target.classList.contains('dot') && event.target == dots[i - 1]){
+                minusSlides(i);
+            }
+        }
+    });
+
+    //calc
+
+    let persons = document.querySelectorAll('.counter-block-input')[0],
+        restDays = document.querySelectorAll('.counter-block-input')[1],
+        place = document.getElementById('select'),
+        totalValue = document.getElementById('total'),
+        personSum = 0,
+        daysSum = 0,
+        total = 0;
+
+        totalValue.innerHTML = 0;
+        persons.addEventListener('input', function () {
+            personSum = +this.value;
+            total = (daysSum + personSum) * 4000;
+
+            if(restDays.value == '' || persons.value == '') {
+                totalValue.textContent = 0;
+               
             } else {
-                statusMessage.innerHTML = mesage.failure;
+                totalValue.textContent = total;
             }
         });
-        for (let i = 0; i < inputs.length; i++) {
-            inputs[i].value = '';
-        }
 
-    });
+        restDays.addEventListener('input', function () {
+            daysSum = +this.value;
+            total = (daysSum + personSum) * 4000;
+
+            if(persons.value == '' || restDays.value == '') {
+                totalValue.textContent = 0;
+                
+            } else {
+                totalValue.textContent = total;
+            }
+        });
+
+        place.addEventListener('change', function () {
+            if(persons.value == '' || restDays.value == '') {
+                totalValue.innerHTML = 0;
+            } else {
+                let a = total;
+                totalValue.innerHTML = a * this.options[this.selectedIndex].value;
+            }
+        })
+
 });
+
